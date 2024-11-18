@@ -7,11 +7,11 @@ A machine learning algorithm for detecting fraudulent transactions in e-commerce
 ```
 fraud_detection/
 ├── src/
-│   ├── fraud_detection_system.py     # Main implementation
-│   ├── fraud_detection_pipeline.py   # Scikit-learn pipeline implementation
-│   └── fraud_monitoring_system.py    # Real-time monitoring implementation
+── fraud_detection_system.py     # Main implementation
+── fraud_detection_pipeline.py   # Scikit-learn pipeline implementation
+── fraud_monitoring_system.py    # Real-time monitoring implementation
 ├── notebooks/
-│   └── Fraud_Detection_Notebook.ipynb               # Exploratory analysis
+── Fraud_Detection_Notebook.ipynb               # Exploratory analysis
 ├── outputs/
 │   ├── figures/                     # Visualization outputs
 │   ├── models/                      # Saved models
