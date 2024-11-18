@@ -1,7 +1,7 @@
 # Fraud Monitoring System Documentation
 
 ## Overview
-The Fraud Monitoring System is a comprehensive solution for real-time monitoring, analysis, and alerting of fraud detection systems. It provides robust functionality for performance tracking, pattern detection, anomaly identification, and automated alerting.
+The Fraud Monitoring System is a solution for real-time monitoring, analysis, and alerting of fraud detection systems. It provides functionality for performance tracking, pattern detection, anomaly identification, and automated alerting.
 
 ## System Architecture
 
@@ -278,10 +278,4 @@ Common issues and solutions:
    MemoryError: Not enough memory
    Solution: Adjust batch size or time window
    ```
-
-## Contact and Support
-
-For support and contributions:
-- Submit issues on GitHub
-- Contact fraud_monitoring@company.com
-- Documentation updates: docs_team@company.com
+   
