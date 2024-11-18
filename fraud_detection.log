@@ -1,0 +1,29 @@
+INFO:root:Feature engineering completed.
+INFO:root:Data loaded and preprocessed successfully.
+INFO:root:Feature preparation completed. Shape: (13239, 23)
+INFO:root:Model training and evaluation completed.
+INFO:root:Feature preparation completed. Shape: (13239, 23)
+INFO:root:Fraud probabilities predicted.
+INFO:root:Model and preprocessor saved to outputs/fraud_detection_model.pkl
+INFO:root:Feature engineering completed.
+INFO:root:Data loaded and preprocessed successfully.
+INFO:root:Feature preparation completed. Shape: (2191, 23)
+INFO:root:Feature preparation completed. Shape: (11048, 23)
+INFO:root:Model training completed.
+INFO:root:Fraud probabilities predicted.
+ERROR:root:Error during execution: Only one class present in y_true. ROC AUC score is not defined in that case.
+INFO:root:Feature engineering completed.
+INFO:root:Data loaded and preprocessed successfully.
+INFO:root:Feature preparation completed. Shape: (1075, 23)
+INFO:root:Feature preparation completed. Shape: (12164, 23)
+INFO:root:Model training completed.
+INFO:root:Fraud probabilities predicted.
+INFO:root:Model and preprocessor saved to outputs/fraud_detection_model.pkl
+INFO:root:Feature engineering completed.
+INFO:root:Data loaded and preprocessed successfully.
+INFO:root:Feature preparation completed. Shape: (1075, 23)
+INFO:root:Feature preparation completed. Shape: (12164, 23)
+INFO:root:Model training completed.
+INFO:root:Model evaluation on Test data completed.
+INFO:root:Feature importance analysis completed.
+INFO:root:Model and preprocessor saved to outputs/fraud_detection_model.pkl
