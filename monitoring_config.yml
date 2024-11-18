@@ -1,0 +1,155 @@
+# Fraud Monitoring System Configuration
+# Last Updated: 2024-08-18
+
+#######################
+# Alert Configuration #
+#######################
+alert_threshold: 0.8  # Primary threshold for high-risk transaction alerts
+
+# Time window for pattern analysis
+monitoring_window: '1H'  # Options: 1H, 6H, 12H, 24H
+
+# Alert Recipients
+email_recipients:
+  - fraud_team@paidy.com
+  - risk_management@paidy.com
+  - security_ops@paidy.com
+
+# Detailed Alert Rules
+alert_rules:
+  # High-risk transaction rules
+  high_risk:
+    threshold: 0.9  # Secondary threshold for critical alerts
+    min_amount: 10000  # Minimum amount for high-risk alerts
+    consecutive_threshold: 3  # Number of consecutive high-risk transactions
+    time_window: '1H'  # Time window for consecutive transaction check
+
+  # Volume-based rules
+  volume:
+    threshold: 1000  # Number of transactions
+    window: '1H'  # Time window for volume check
+    increase_threshold: 200  # Percentage increase from baseline
+
+  # Amount-based rules
+  amount:
+    daily_limit: 1000000  # Daily transaction amount limit
+    single_transaction_limit: 100000  # Single transaction limit
+    sudden_increase_threshold: 300  # Percentage increase from average
+
+  # Pattern-based rules
+  patterns:
+    velocity_threshold: 10  # Transactions per hour
+    new_account_age: 24  # Hours
+    high_risk_merchant_threshold: 0.7  # Merchant risk score threshold
+
+#############################
+# Visualization Settings    #
+#############################
+visualization_settings:
+  # Plot configurations
+  figure:
+    size: [20, 15]
+    dpi: 300
+    style: 'seaborn'
+    
+  # Color schemes
+  colors:
+    risk_gradient:
+      - '#fee8c8'
+      - '#fdbb84'
+      - '#e34a33'
+    categorical:
+      - '#1f77b4'
+      - '#ff7f0e'
+      - '#2ca02c'
+    
+  # Plot types
+  plots:
+    risk_distribution:
+      type: 'histogram'
+      bins: 50
+      
+    temporal_patterns:
+      type: 'line'
+      rolling_window: '6H'
+      
+    amount_patterns:
+      type: 'scatter'
+      alpha: 0.6
+
+######################
+# System Settings    #
+######################
+system:
+  # Logging configuration
+  logging:
+    level: 'INFO'
+    rotation: '1 day'
+    retention: '30 days'
+    format: '%(asctime)s - %(levelname)s - %(message)s'
+
+  # Output directories
+  directories:
+    outputs: './outputs'
+    figures: './figures'
+    reports: './reports'
+    alerts: './alerts'
+    logs: './logs'
+
+  # Performance monitoring
+  monitoring:
+    metrics_retention: '90 days'
+    update_frequency: '1H'
+    baseline_window: '7 days'
+
+  # Alert delivery
+  alert_delivery:
+    email:
+      smtp_server: 'smtp.company.com'
+      smtp_port: 587
+      use_tls: true
+      sender: 'fraud-alerts@company.com'
+    
+    slack:
+      webhook_url: 'https://hooks.slack.com/services/xxx'
+      channel: '#fraud-alerts'
+
+########################
+# Business Rules       #
+########################
+business_rules:
+  # Risk scoring weights
+  risk_weights:
+    transaction_velocity: 0.3
+    amount: 0.25
+    account_age: 0.15
+    merchant_risk: 0.15
+    pattern_match: 0.15
+
+  # Business hours
+  business_hours:
+    start: '09:00'
+    end: '17:00'
+    timezone: 'Asia/Tokyo'
+
+  # Transaction limits by merchant category
+  merchant_limits:
+    high_risk:
+      daily_limit: 500000
+      transaction_limit: 50000
+    medium_risk:
+      daily_limit: 1000000
+      transaction_limit: 100000
+    low_risk:
+      daily_limit: 2000000
+      transaction_limit: 200000
+
+#########################
+# Performance Targets   #
+#########################
+performance_targets:
+  precision: 0.95
+  recall: 0.80
+  f1_score: 0.85
+  false_positive_rate_max: 0.05
+  response_time_seconds: 1.0
