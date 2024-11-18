@@ -377,6 +377,5 @@ def enhance_model(self):
 1. Enhanced real-time scoring capabilities
 2. More sophisticated network analysis
 3. Advanced behavioral analytics
-4. Improved merchant risk profiling
+4. Improve merchant risk profiling
 
-This comprehensive technical summary represents the complete development process, challenges, solutions, and future improvements for the fraud detection system.
