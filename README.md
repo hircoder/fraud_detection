@@ -216,17 +216,53 @@ monitor.alert_strategies.append(VolumeAlert(threshold=1000))
 
 ### Model Performance
 ```python
+
 Final Metrics:
 {
-    'accuracy': 0.9653,
-    'precision': 0.0622,
-    'recall': 1.0000,
-    'f1': 0.1172,
-    'f2': 0.2491,
-    'auc_roc': 0.9877,
-    'auc_pr': 0.1606
+    'accuracy': 0.9653,    # Overall correct predictions
+    'precision': 0.0622,   # True positive / Total predicted positive
+    'recall': 1.0000,      # True positive / Total actual positive
+    'f1': 0.1172,         # Harmonic mean of precision and recall
+    'f2': 0.2491,         # Weighted F-score favoring recall
+    'auc_roc': 0.9877,    # Area under ROC curve
+    'auc_pr': 0.1606      # Area under Precision-Recall curve
 }
 ```
+High AUC-ROC (0.9877) indicates excellent discrimination ability
+Perfect recall (1.0000) suggests we catch all fraud cases
+Low precision (0.0622) indicates many false positives
+F2 score (0.2491) shows recall-focused performance
+
+#### Metric Selection by Objective
+1. Minimize Financial Loss (High Precision)
+   - High cost of investigating false alarms
+   - Limited investigation resources
+   - Focus on high-confidence fraud cases
+      **Key Metrics: Precision, AUC-PR**
+      **Trade-off: May miss some fraudulent transactions**
+
+2. Maximum Fraud Detection (High Recall)
+  - High cost of missed fraud
+  - Sufficient resources for investigation
+  - In case of strict requirements
+    **Key Metrics: Recall, F2 Score
+    Trade-off: More false positives to investigate**
+
+3. Balanced Approach (F1 Score)
+   - Equal cost of false positives and false negatives
+   - Moderate investigation resources
+     **Key Metrics: F1 Score, AUC-ROC
+     Trade-off: Compromise between missed fraud and false alarms**
+
+Precision-Recall Trade-off:
+   - Higher precision → Lower recall
+   - Higher recall → Lower precision
+   - Business decides optimal balance
+
+Therefore, given the final metrics reported, this model is suitable for:
+   - High-stakes fraud detection where missing fraud is costly
+   - Environments with sufficient investigation resources
+   - Cases where false positives are less costly than false negatives
 
 ### Monitoring Metrics
 - Transaction velocity patterns
