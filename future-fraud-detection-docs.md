@@ -2,7 +2,7 @@
 ## Technical Implementation Guide
 
 ### Overview
-This document provides a detailed explanation of the Future Fraud Detection system implementation, designed to identify and flag potentially fraudulent transactions in real-time, with a specific focus on future predictions (post 4/27).
+This document provides explanation of the Future Fraud Detection system implementation, designed to identify and flag potentially fraudulent transactions in real-time, with a specific focus on future predictions (post 4/27).
 
 ## System Architecture
 
