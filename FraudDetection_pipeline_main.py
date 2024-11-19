@@ -36,14 +36,18 @@ logging.basicConfig(filename='fraud_detection.log', level=logging.INFO)
 
 
 class FraudDetectionSystem:
+    """
+    A class to encapsulate the fraud detection system, including data loading,
+    preprocessing, feature engineering, model training, evaluation, and saving.
+    """
     def __init__(self):
         """
         Initialize the FraudDetectionSystem with default values.
         """
-        self.model = None
-        self.preprocessor = None
-        self.features = None
-        self.optimal_threshold = 0.5  # Default threshold
+        self.model = None           # Will hold the trained model
+        self.preprocessor = None    # Will hold the preprocessing pipeline
+        self.features = None        # List of feature names used in the model
+        self.optimal_threshold = 0.5  # Default classification threshold
 
     def load_and_preprocess_data(self, file_path):
         """
@@ -63,7 +67,7 @@ class FraudDetectionSystem:
             df['adjusted_pmt_created_at'] = pd.to_datetime(df['adjusted_pmt_created_at'])
             df['adjusted_acc_created_at'] = pd.to_datetime(df['adjusted_acc_created_at'])
 
-            # Fill missing values
+            # Fill missing values for categorical and numerical columns
             df.fillna({
                 'device': 'Unknown',
                 'version': 'Unknown',
@@ -77,7 +81,7 @@ class FraudDetectionSystem:
             # Handle fraud_flag missing values
             df['fraud_flag'] = df['fraud_flag'].fillna(0).astype(int)
 
-            # Feature Engineering
+            # Perform feature engineering to create additional predictive features
             df = self.create_features(df)
 
             logging.info("Data loaded and preprocessed successfully.")
@@ -89,7 +93,14 @@ class FraudDetectionSystem:
 
     def create_features(self, df):
         """
-        Create new features for fraud detection.
+        Create new features for fraud detection, including time-based features,
+        transaction velocity, risk scores, and identity matching.
+
+        Parameters:
+        - df (DataFrame): The DataFrame containing raw data.
+
+        Returns:
+        - df (DataFrame): The DataFrame enriched with new features.
         """
         # Sort data by consumer ID and timestamp
         df = df.sort_values(['hashed_consumer_id', 'adjusted_pmt_created_at'])
@@ -102,8 +113,8 @@ class FraudDetectionSystem:
         df['payment_day'] = df['adjusted_pmt_created_at'].dt.day
         df['is_weekend'] = df['adjusted_pmt_created_at'].dt.weekday.isin([5, 6]).astype(int)
 
-        # Transaction velocity with time windows
-        # Set the datetime index
+        # Transaction velocity features using rolling windows
+        # Set the datetime index for rolling computations
         df.set_index('adjusted_pmt_created_at', inplace=True)
 
         # Calculate transaction counts in the past 1 hour and 24 hours, excluding the current transaction
@@ -111,22 +122,23 @@ class FraudDetectionSystem:
             lambda x: x.shift().rolling('1H').count()
         ).reset_index(level=0, drop=True)
 
+        # Calculate the number of transactions in the past 24 hours for each consumer
         df['tx_count_24H'] = df.groupby('hashed_consumer_id')['payment_id'].apply(
             lambda x: x.shift().rolling('24H').count()
         ).reset_index(level=0, drop=True)
 
-        # Reset index
+        # Reset index back to the default integer index
         df.reset_index(inplace=True)
 
         # Fill any NaN values resulting from rolling computations
         df['tx_count_1H'] = df['tx_count_1H'].fillna(0)
         df['tx_count_24H'] = df['tx_count_24H'].fillna(0)
 
-        # Amount features with normalization
+        # Amount features with normalization to identify outliers
         df['amount_zscore'] = (df['amount'] - df['amount'].mean()) / df['amount'].std()
         df['amount_percentile'] = df['amount'].rank(pct=True)
 
-        # Rolling mean features to prevent data leakage
+        # Rolling mean features to capture recent behavior while avoiding data leakage
         df['amount_rolling_mean'] = df.groupby('hashed_consumer_id')['amount'].apply(
             lambda x: x.shift().rolling(window=3, min_periods=1).mean()
         )
@@ -134,21 +146,21 @@ class FraudDetectionSystem:
             lambda x: x.shift().rolling(window=3, min_periods=1).mean()
         )
 
-        # Fill NaN values in rolling means
+        # Fill NaN values in rolling means with the overall mean to avoid missing data
         df['amount_rolling_mean'] = df['amount_rolling_mean'].fillna(df['amount'].mean())
         df['account_age_hours_rolling_mean'] = df['account_age_hours_rolling_mean'].fillna(df['account_age_hours'].mean())
 
-        # Identity consistency features
+        # Identity consistency features to detect mismatches in user information
         df['email_match'] = (df['hashed_buyer_email'] == df['hashed_consumer_email']).astype(int)
         df['phone_match'] = (df['hashed_buyer_phone'] == df['hashed_consumer_phone']).astype(int)
 
-        # Risk scoring features
+        # Risk scoring features based on account age and transaction amount
         df['account_age_risk'] = np.where(df['account_age_hours'] < 1, 1,
                                           np.where(df['account_age_hours'] < 24, 0.5, 0))
         df['amount_risk'] = np.where(df['amount'] > 10000, 1,
                                      np.where(df['amount'] > 5000, 0.5, 0))
 
-        # Consumer age risk
+        # Consumer age risk to identify risky age groups
         df['consumer_age_risk'] = np.where(df['consumer_age'] < 25, 1,
                                            np.where(df['consumer_age'] > 60, 1, 0))
 
@@ -157,7 +169,16 @@ class FraudDetectionSystem:
 
     def prepare_features(self, df):
         """
-        Prepare features for modeling.
+        Prepare features for modeling by selecting relevant columns,
+        handling missing values, and defining numerical and categorical features.
+
+        Parameters:
+        - df (DataFrame): The DataFrame with engineered features.
+
+        Returns:
+        - X (DataFrame): The feature matrix ready for model training or prediction.
+        - numerical_columns (list): List of numerical feature names.
+        - categorical_columns (list): List of categorical feature names.
         """
         try:
             # Select features for modeling
@@ -175,7 +196,7 @@ class FraudDetectionSystem:
             # Store feature names for later use
             self.features = feature_columns.copy()
 
-            # Create copy of selected features
+            # Create a copy of the selected features to avoid modifying the original DataFrame
             X = df[feature_columns].copy()
 
             # Define numerical columns
@@ -192,19 +213,19 @@ class FraudDetectionSystem:
             # Define categorical columns
             categorical_columns = ['device', 'version', 'merchant_name', 'consumer_gender']
 
-            # Handle numerical missing values
+            # Handle missing values and ensure correct data types for numerical columns
             for col in numerical_columns:
                 if col in X.columns:
                     median_value = X[col].median()
                     X[col] = X[col].fillna(median_value)
                     X[col] = X[col].astype(float)
 
-            # Handle categorical missing values
+            # Handle missing values and ensure correct data types for categorical columns
             for col in categorical_columns:
                 X[col] = X[col].fillna('Unknown')
                 X[col] = X[col].astype(str)
 
-            # Check for any remaining NaN values
+            # Check for any remaining NaN values in the feature matrix
             if X.isnull().any().any():
                 null_counts = X.isnull().sum()
                 logging.warning(f"Found remaining null values:\n{null_counts[null_counts > 0]}")
@@ -219,16 +240,24 @@ class FraudDetectionSystem:
 
     def train_model(self, X_data, y_train):
         """
-        Train the fraud detection model and save visualizations.
+        Train the fraud detection model using XGBoost and a preprocessing pipeline.
+
+        Parameters:
+        - X_data (tuple): A tuple containing the feature matrix and feature column info.
+        - y_train (Series): The target variable for training.
+
+        Returns:
+        - model: The trained XGBoost model.
         """
         try:
             # Unpack prepared data
             X_train, numerical_columns, categorical_columns = X_data
 
-            # Define preprocessing pipelines
+            # Define preprocessing pipelines for numerical and categorical features
             numerical_transformer = StandardScaler()
             categorical_transformer = OneHotEncoder(handle_unknown='ignore', sparse=False)
-
+            
+            # Combine preprocessing steps into a ColumnTransformer
             preprocessor = ColumnTransformer(
                 transformers=[
                     ('num', numerical_transformer, numerical_columns),
@@ -236,7 +265,7 @@ class FraudDetectionSystem:
                 ]
             )
 
-            # Create the modeling pipeline
+            # Create the modeling pipeline combining preprocessing and the classifier
             pipeline = Pipeline(steps=[
                 ('preprocessor', preprocessor),
                 ('classifier', xgb.XGBClassifier(
@@ -277,17 +306,20 @@ class FraudDetectionSystem:
 
         Parameters:
         - X_data (tuple): The feature matrix and related info.
-        - y_test (Series): True labels.
+        - y_test (Series): True labels for the test set.
         - dataset_label (str): Label for the dataset (e.g., 'Test', 'Validation').
+
+        Returns:
+        - metrics (dict): A dictionary containing various evaluation metrics.
         """
         try:
             # Unpack prepared data
             X_test, _, _ = X_data
 
-            # Preprocess the data
+            # Preprocess the data using the stored preprocessor
             X_test_preprocessed = self.preprocessor.transform(X_test)
 
-            # Predict probabilities
+            # Predict probabilities of the positive class
             y_pred_proba = self.model.predict_proba(X_test_preprocessed)[:, 1]
 
             # Use the default threshold or optimal threshold if calculated
@@ -403,7 +435,10 @@ class FraudDetectionSystem:
 
     def save_model(self, filepath):
         """
-        Save the trained model and preprocessor to a file.
+        Save the trained model and preprocessor to a file for future use.
+
+        Parameters:
+        - filepath (str): The path where the model will be saved.
         """
         joblib.dump({'model': self.model, 'preprocessor': self.preprocessor}, filepath)
         logging.info(f"Model and preprocessor saved to {filepath}")
@@ -440,7 +475,7 @@ def main():
         train_df = df[df['adjusted_pmt_created_at'] < cutoff_date]
         test_df = df[df['adjusted_pmt_created_at'] >= cutoff_date]
 
-        # Verify class distribution
+        # Verify class distribution in the training and test sets
         print("\nTraining set class distribution:")
         print(train_df['fraud_flag'].value_counts())
         print("\nTest set class distribution:")
