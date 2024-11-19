@@ -238,7 +238,7 @@ Final Metrics:
 
 ### Technical Documentation
 - [Documentations of code for future fraud detection](future-fraud-detection-docs.md)
-- [Documentations of monitoring and alert modules](dfraud-monitoring-alert-docs.md)
+- [Documentations of monitoring and alert modules](fraud-monitoring-alert-docs.md)
 - [Understaing the code deeply](code-evolution.md)
 - [Brief technical summary of codes and implementations](technical-summary.md)
 - [Report and answers for assigned tasks](fraud-report-tasks.md)
