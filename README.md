@@ -12,8 +12,8 @@ A machine learning system for detecting and preventing fraudulent transactions i
 
 ### Core Capabilities
 1. **Fraud Detection Engine**
-   - Future prediction system
-   - Advanced feature engineering
+   - Future prediction
+   - Feature engineering
    - Real-time scoring
    - Performance validation
 
@@ -24,7 +24,7 @@ A machine learning system for detecting and preventing fraudulent transactions i
    - Temporal pattern analysis
 
 3. **Alert System**
-   - Multi-strategy alert framework
+   - Alert framework
    - Risk-based alerting
    - Performance monitoring
    - Business impact tracking
@@ -34,11 +34,14 @@ A machine learning system for detecting and preventing fraudulent transactions i
 fraud_detection/
 ├── src/
 │   ├── future_fraud_detection.py    # Future prediction implementation
+│   ├── FraudDetection_pipeline_main.py    # Base detection engine
 │   ├── fraud_monitoring_system.py   # Real-time monitoring system
 │   └── fraud_detection_system.py    # Base detection engine
-├── config/
-│   ├── monitoring_config.yml        # Monitoring configuration
-│   └── alert_config.yml            # Alert system configuration
+│   └── fraud_detection_time_based.py # Basic temporal features
+├── Notebook
+│   ├── Fraud_Detection_Notebook.ipynb # Basic detection engine in Jupyter notebook style
+│── monitoring_config.yml        # Monitoring configuration
+│── alert_config.yml            # Alert system configuration, to be added
 ├── outputs/
 │   ├── future_predictions/         # Future prediction results
 │   │   ├── high_risk_transactions.csv
@@ -56,8 +59,11 @@ fraud_detection/
 │       ├── pattern_analysis.png
 │       └── alert_distribution.png
 ├── docs/
-│   ├── technical_documentation.md
-│   └── api_reference.md
+│   ├── technical-summary.md
+│   ├── fraud-report-tasks.md
+│   ├── fraud-monitoring-alert-docs.md
+│   ├── code-evolution.md
+│   └── future-fraud-detection-docs.md
 └── logs/
     └── fraud_detection.log
 ```
@@ -121,12 +127,11 @@ class HighRiskTransactionAlert(AlertStrategy):
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/fraud_detection.git
+git clone [https://github.com/yourusername/fraud_detection](https://github.com/hircoder/fraud_detection/).git
 
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Unix
-.\venv\Scripts\activate   # Windows
 
 # Install dependencies
 pip install -r requirements.txt
@@ -248,7 +253,7 @@ Final Metrics:
 
 
 ## Acknowledgments
-- Built using scikit-learn and XGBoost
+- Built using scikit-learn and XGBoost: https://github.com/dmlc/xgboost/tree/master/demo/guide-python https://github.com/scikit-learn/scikit-learn/tree/main/examples
 - Monitoring system inspired by production fraud detection systems
 - Visualization powered by matplotlib and seaborn
 - Alert system based on enterprise monitoring patterns
