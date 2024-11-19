@@ -18,6 +18,212 @@
 | Feature Engineering | Information leakage | Basic features | Advanced temporal feature framework |
 | Model Validation | Unreliable metrics | Standard cross-validation | Time-based cross-validation |
 
+### 1.2 ITechnical Challenges
+**Class Imbalance (0.52% fraud):**
+    - Extreme imbalance (0.52% fraud rate)
+    - Model biased towards majority class
+    - Poor fraud detection performance
+    
+**First Attempt: Basic SMOTE**
+    ```python
+    smote = SMOTE(random_state=42)
+    X_resampled, y_resampled = smote.fit_resample(X, y)
+    ```
+    Limitations:
+        - Oversampling without consideration of temporal order
+        - Risk of data leakage through synthetic samples
+        - No adaptation to feature distribution
+
+**Second Attempt: SMOTE + Class Weights**
+    ```python
+    class_weight = {
+        0: 1,
+        1: sum(y == 0) / sum(y == 1)  # Dynamic weighting
+    }
+    ```
+    Improvements:
+        - Combined resampling with weighting
+        - Better handling of minority class
+        - Still lacked temporal consideration
+#### 1.2.1 Multi-Strategy Approach
+```python
+    def handle_class_imbalance(self, X, y):
+    # 1. Adaptive SMOTE with temporal awareness
+    smote = SMOTE(
+        sampling_strategy=0.3,  # Controlled minority increase
+        k_neighbors=min(5, sum(y == 1) - 1),  # Adaptive neighborhood
+        random_state=42
+    )
+    
+    # 2. Dynamic class weights
+    scale_pos_weight = sum(y == 0) / sum(y == 1)
+    
+    # 3. Custom evaluation metric
+    def weighted_f1_score(y_true, y_pred):
+        return fbeta_score(y_true, y_pred, beta=2)  # Emphasis on recall
+        
+    # 4. Threshold optimization
+    thresholds = np.linspace(0, 1, 100)
+    optimal_threshold = self._find_optimal_threshold(
+        y_test, y_pred_proba, thresholds
+    )
+```
+
+### 1.3 Data Leakage
+**Problem**
+- Future information in feature calculation
+- Cross-contamination between train/test
+- Inflated performance metrics
+
+**First Attempt: Time Split**
+    ```python
+    train_df = df[df['date'] < cutoff_date]
+    test_df = df[df['date'] >= cutoff_date]
+    ```
+    Limitations:
+        - Feature calculations still used future data
+        - Rolling statistics leaked information
+
+**Second Attempt: Time-based Features**
+    ```python
+    df['account_age'] = (current_time - account_creation_time)
+    df['transaction_count'] = df.groupby('user')['id'].cumcount()
+    ```
+    Improvements:
+        - Basic temporal features
+        - Still had subtle leakage issues
+        
+#### 1.3.1 Temporal Framework
+```python
+    class TemporalFeatureManager:
+    def create_features(self, df, reference_time):
+        # 1. Point-in-time feature computation
+        features = self._compute_current_features(df, reference_time)
+        
+        # 2. Rolling windows with proper boundaries
+        df.set_index('timestamp', inplace=True)
+        for window in ['1H', '24H']:
+            features[f'tx_count_{window}'] = (
+                df.groupby('user_id')['transaction_id']
+                .rolling(window, closed='left')  # Exclude current
+                .count()
+                .reset_index(level=0, drop=True)
+            )
+        
+        # 3. Lagged aggregations
+        features['amount_rolling_mean'] = (
+            df.groupby('user_id')['amount']
+            .apply(lambda x: x.shift().rolling('24H', closed='left').mean())
+        )
+        
+        return features
+```
+### 1.4 Feature Engineering
+**Problem**
+- Basic feature set
+- No temporal considerations
+- Limited risk indicators
+
+**First Attempt: Static Features**
+    ```python
+    features = [
+        'account_age',
+        'transaction_amount',
+        'device_type'
+    ]
+    ```
+    Limitations:
+        - No temporal patterns
+        - Missing risk indicators
+        - Poor fraud detection capability
+
+**Second Attempt:**
+    ```python
+    df['transaction_velocity'] = df.groupby('user')['timestamp'].diff()
+    df['amount_zscore'] = (df['amount'] - df['amount'].mean()) / df['amount'].std()
+    ```
+    Improvements:
+        - Basic velocity metrics
+        = Statistical features
+        - Still lacked sophistication
+
+#### 1.4.1 Advanced Feature Framework
+```python
+    class FeatureEngineering:
+    def __init__(self):
+        self.feature_sets = {
+            'temporal': self._create_temporal_features,
+            'behavioral': self._create_behavioral_features,
+            'risk': self._create_risk_features,
+            'identity': self._create_identity_features
+        }
+    
+    def _create_temporal_features(self, df, reference_time):
+        return {
+            'account_age_hours': self._compute_account_age(df, reference_time),
+            'tx_velocity': self._compute_velocity_features(df, reference_time),
+            'time_patterns': self._analyze_temporal_patterns(df, reference_time)
+        }
+    
+    def _create_risk_features(self, df):
+        return {
+            'account_risk': self._compute_account_risk(df),
+            'behavioral_risk': self._compute_behavioral_risk(df),
+            'amount_risk': self._compute_amount_risk(df)
+        }
+```
+
+### 1.5 Model Validation
+**Problem**
+- Standard cross-validation
+- No temporal consideration
+- Unreliable performance estimates
+
+**First Attempt: Basic Cross-validation**
+    ```python
+    from sklearn.model_selection import cross_val_score
+    scores = cross_val_score(model, X, y, cv=5)
+    ```
+    Limitations:
+        - Random splits
+        - Future data leakage
+        - Unrealistic evaluation
+
+**Second Attempt: Time-based Split**
+    ```python
+    train_idx = df.index[df['date'] < cutoff_date]
+    test_idx = df.index[df['date'] >= cutoff_date]
+    ```
+    Limitations:
+        - Basic temporal separation
+        - Still lacked sophistication
+
+#### 1.5.1 Validation Framework
+```python
+    class TimeSeriesValidator:
+    def __init__(self, n_splits=5, gap='1D'):
+        self.n_splits = n_splits
+        self.gap = pd.Timedelta(gap)
+    
+    def split(self, X, dates):
+        # Sort by time
+        sorted_indices = np.argsort(dates)
+        
+        # Create splits with gaps
+        splits = []
+        for i in range(self.n_splits):
+            split_point = dates.quantile((i + 1) / self.n_splits)
+            train_mask = dates <= split_point
+            test_mask = (dates > split_point + self.gap) & 
+                       (dates <= split_point + self.gap + pd.Timedelta('7D'))
+            splits.append((
+                sorted_indices[train_mask],
+                sorted_indices[test_mask]
+            ))
+        
+        return splits
+```
+
 ## 2. Data Preprocessing and Feature Engineering Evolution
 
 ### 2.1 Data Preprocessing Pipeline
