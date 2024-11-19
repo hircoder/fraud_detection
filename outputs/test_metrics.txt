@@ -1,0 +1,9 @@
+Model Performance Metrics on Test Data:
+accuracy: 0.9653
+precision: 0.0622
+recall: 1.0000
+f1: 0.1172
+f2: 0.2491
+auc_roc: 0.9877
+auc_pr: 0.1606
+optimal_threshold: 0.5000
