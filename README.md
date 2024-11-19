@@ -28,6 +28,13 @@ A machine learning system for detecting and preventing fraudulent transactions i
    - Risk-based alerting
    - Performance monitoring
    - Business impact tracking
+     
+4. **Analytics Engine**
+   - Merchant pattern analysis
+   - Temporal pattern detection
+   - Statistical pattern analysis
+   - Risk correlation analysis
+
 
 ## Project Structure
 ```
@@ -36,7 +43,8 @@ fraud_detection/
 │   ├── future_fraud_detection.py    # Future prediction implementation
 │   ├── FraudDetection_pipeline_main.py    # Base detection engine
 │   ├── fraud_monitoring_system.py   # Real-time monitoring system
-│   └── fraud_detection_system.py    # Base detection engine
+│   ├── fraud_detection_system.py    # Base detection engine
+│   ├── more_analytics.py          # Advanced analytics components
 │   └── fraud_detection_time_based.py # Basic temporal features
 ├── Notebook
 │   ├── Fraud_Detection_Notebook.ipynb # Basic detection engine in Jupyter notebook style
@@ -123,6 +131,54 @@ class HighRiskTransactionAlert(AlertStrategy):
         }
 ```
 
+### 5. Analytics
+```python
+class AdvancedAnalysis:
+    def analyze_merchant_patterns(self):
+        """
+        Detailed merchant-specific analysis
+        """
+        merchant_stats = {
+            'total_transactions': len(merchant_data),
+            'fraud_rate': merchant_data['fraud_flag'].mean() * 100,
+            'avg_transaction': merchant_data['amount'].mean(),
+            
+            # Risk metrics
+            'new_account_rate': (merchant_data['merchant_account_age'] == 0).mean(),
+            'high_risk_rate': (merchant_data['account_age_risk'] > 0.5).mean(),
+            
+            # Velocity metrics
+            'avg_tx_per_user': merchant_data.groupby('hashed_consumer_id').size().mean(),
+            'high_velocity_rate': (merchant_data['tx_count_1H'] > 2).mean()
+        }
+
+    def analyze_temporal_patterns(self):
+        """
+        Comprehensive temporal analysis including:
+        - Hourly/Daily patterns
+        - Time-based risk scores
+        - Velocity analysis
+        """
+        temporal_insights = {
+            'hourly_patterns': hourly.to_dict(),
+            'daily_patterns': daily.to_dict(),
+            'time_risk_scores': time_risk.to_dict(),
+            'velocity_statistics': velocity_stats
+        }
+
+    def analyze_statistical_patterns(self):
+        """
+        Statistical analysis of fraud patterns including:
+        - Amount distribution
+        - Risk correlations
+        - User behavior patterns
+        """
+        patterns = {
+            'amount_analysis': amount_stats,
+            'risk_correlations': risk_correlations,
+            'user_patterns': user_patterns
+        }
+```
 ## Installation
 
 ```bash
@@ -211,6 +267,25 @@ class VolumeAlert(AlertStrategy):
 # Add to monitoring system
 monitor.alert_strategies.append(VolumeAlert(threshold=1000))
 ```
+
+### 3. Analytics
+```python
+from more_analytics import AdvancedAnalysis
+
+# Initialize analytics
+analyzer = AdvancedAnalysis(df)
+
+# Analyze patterns
+merchant_insights = analyzer.analyze_merchant_patterns()
+temporal_insights = analyzer.analyze_temporal_patterns()
+statistical_patterns = analyzer.analyze_statistical_patterns()
+
+# Access insights
+print("Merchant Insights:", merchant_insights)
+print("Temporal Patterns:", temporal_insights)
+print("Statistical Patterns:", statistical_patterns)
+```
+
 
 ## Performance Metrics
 
