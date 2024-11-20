@@ -158,12 +158,7 @@ def calculate_risk_score(transaction):
 
    - Use advanced techniques to uniquely identify devices and detect reuse across multiple accounts.
 
-2. **Enhance User Verification:**
-
-   - Introduce two-factor authentication for high-risk transactions.
-   - Require additional verification for new accounts making large transactions.
-
-3. **Deploy Velocity Controls:**
+2. **Deploy Velocity Controls:**
 
    - Apply rate limiting at the account, IP, and device levels.
 
