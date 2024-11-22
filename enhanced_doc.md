@@ -1,7 +1,7 @@
 # Enhanced Fraud Detection: Performance Improvements and Technical Implementation
 
 ## Overview
-This document details the improvements made to this fraud detection code, which transformed a model with high recall but poor precision (0.0622) into one achieving perfect precision (1.0) while maintaining strong recall (0.8). 
+This document details the improvements made to previous fraud detection code, which transformed a model with high recall but poor precision (0.0622) into one achieving perfect precision (1.0) while maintaining strong recall (0.8). 
 The enhancements span feature engineering, sampling strategies, and business-oriented optimizations.
 
 ## Key Performance Improvements
