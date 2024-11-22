@@ -171,15 +171,63 @@ def weighted_prediction(self, X):
 ## 2. Feature Engineering Enhancements
 
 ### Network Analysis Features
+is a sophisticated approach to detect fraud by analyzing interconnected patterns in transaction data. 
+
+#### Key advantages:
+        - Capture complex relationships that simple rule-based systems miss
+        - Can identify organized fraud rings through connection analysis
+        - Detect evolving fraud patterns through temporal analysis
+        - Additional context for transaction risk scoring
+        - Improves false positive reduction through pattern validation
+
 ```python
 def create_network_features(df):
+    """
+    Creates network-based features to identify suspicious patterns and connections
+    between different entities in the transaction data.
+
+    Maps relationships between devices and IP addresses to detect:
+    - Same device using multiple IPs
+    - Same IP used by multiple devices
+    - Suspicious device-IP combinations
+    """
     features = {
         'device_ip_connections': graph_analysis(df, ['device', 'hashed_ip']),
         'email_phone_matches': analyze_identity_links(df),
         'transaction_patterns': temporal_pattern_analysis(df)
     }
     return features
+
+def analyze_identity_links(df):
+    """
+    Analyzes connections between user identities:
+    - Email-phone number combinations
+    - Account reuse patterns
+    - Identity element sharing between accounts
+    """
+    return {
+        'email_reuse_count': df.groupby('hashed_email')['hashed_consumer_id'].nunique(),
+        'phone_reuse_count': df.groupby('hashed_phone')['hashed_consumer_id'].nunique(),
+        'identity_overlap_score': calculate_identity_overlap(df)
+    }
+
+def temporal_pattern_analysis(df):
+    """
+    Analyzes temporal transaction patterns:
+    - Transaction velocity by entity
+    - Time-based clustering of activities
+    - Pattern anomaly detection
+    """
+    return {
+        'transaction_velocity': calculate_velocity(df),
+        'time_pattern_score': detect_time_patterns(df),
+        'anomaly_score': detect_pattern_anomalies(df)
+    }
 ```
+#### Key advantages of network analysis features:
+    - Identifies organized fraud rings through connection patterns
+    - Detects synthetic identities through unusual connection patterns
+    - Identifies account takeovers through behavior changes
 
 ### Deep Feature Synthesis
 ```python
@@ -298,13 +346,5 @@ def explain_predictions(model, X):
 2. Feature engineering research
    - Investigate causal inference techniques
    - Research temporal pattern detection methods
-
-## Expected Improvements:
-- Accuracy target: > 0.9995
-- Precision target: maintain at 1.0000
-- Recall target: improve to 0.9000
-- F1 Score target: improve to > 0.9500
-- Processing time: reduce by 25%
-- Model interpretability: improve SHAP value clarity
 
 These improvements and tasks focus on creating a more robust, scalable, and interpretable fraud detection system while maintaining the high performance metrics already achieved.
